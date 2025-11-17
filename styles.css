@@ -1,0 +1,374 @@
+/* styles.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Custom gradient backgrounds */
+.gradient-bg {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+}
+
+.gradient-accent {
+    background: linear-gradient(135deg, #805ad5 0%, #d53f8c 50%, #00b5d8 100%);
+}
+
+/* Navigation button styles - Updated to match UI */
+.nav-btn {
+    background: transparent;
+    color: #a0aec0;
+    transition: all 0.3s ease;
+}
+
+.nav-btn.active {
+    background: rgba(128, 90, 213, 0.2);
+    color: #ffffff;
+    box-shadow: 0 0 20px rgba(128, 90, 213, 0.4);
+    border-color: #805ad5 !important;
+}
+
+.nav-btn:hover:not(.active) {
+    background: rgba(128, 90, 213, 0.1);
+    color: #e2e8f0;
+    border-color: #805ad5 !important;
+}
+
+/* Page sections */
+.page-section {
+    display: none;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.page-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Card styles with glowing effect */
+.glow-card {
+    background: rgba(45, 55, 72, 0.7);
+    border: 1px solid;
+    border-image: linear-gradient(135deg, #805ad5, #d53f8c, #00b5d8) 1;
+    box-shadow: 0 4px 20px rgba(128, 90, 213, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+/* Print button - Updated to match UI */
+.print-btn {
+    background: linear-gradient(135deg, #805ad5 0%, #d53f8c 100%);
+    box-shadow: 0 4px 15px rgba(128, 90, 213, 0.4);
+    color: white;
+}
+
+.print-btn:hover {
+    box-shadow: 0 6px 25px rgba(128, 90, 213, 0.6);
+    transform: translateY(-2px);
+}
+
+/* Leaderboard item styles */
+.leaderboard-item {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(74, 85, 104, 0.5);
+}
+
+.leaderboard-item:hover {
+    background: rgba(128, 90, 213, 0.1);
+}
+
+.rank-badge {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.rank-1 {
+    background: linear-gradient(135deg, #f6e05e, #d69e2e);
+    color: #1a202c;
+    box-shadow: 0 0 15px rgba(214, 158, 46, 0.5);
+}
+
+.rank-2 {
+    background: linear-gradient(135deg, #e2e8f0, #a0aec0);
+    color: #1a202c;
+    box-shadow: 0 0 15px rgba(160, 174, 192, 0.5);
+}
+
+.rank-3 {
+    background: linear-gradient(135deg, #ed8936, #c05621);
+    color: #1a202c;
+    box-shadow: 0 0 15px rgba(237, 137, 54, 0.5);
+}
+
+.rank-other {
+    background: rgba(74, 85, 104, 0.5);
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+}
+
+/* Edit/Delete button styles */
+.action-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.edit-btn {
+    background: rgba(56, 178, 172, 0.2);
+    color: #38b2ac;
+    border: 1px solid rgba(56, 178, 172, 0.3);
+}
+
+.edit-btn:hover {
+    background: rgba(56, 178, 172, 0.4);
+    transform: translateY(-1px);
+}
+
+.delete-btn {
+    background: rgba(245, 101, 101, 0.2);
+    color: #f56565;
+    border: 1px solid rgba(245, 101, 101, 0.3);
+}
+
+.delete-btn:hover {
+    background: rgba(245, 101, 101, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Score input in edit mode */
+.score-input {
+    width: 100px;
+    background: rgba(45, 55, 72, 0.8);
+    border: 1px solid #4a5568;
+    border-radius: 6px;
+    color: white;
+    padding: 4px 8px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.score-input:focus {
+    outline: none;
+    border-color: #805ad5;
+    box-shadow: 0 0 0 2px rgba(128, 90, 213, 0.2);
+}
+
+/* Stats card styles */
+.stat-card {
+    background: rgba(45, 55, 72, 0.7);
+    border: 1px solid #4a5568;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border-color: #805ad5;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #805ad5, #d53f8c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Form message styles */
+.success-message {
+    background: rgba(72, 187, 120, 0.2);
+    border: 1px solid rgba(72, 187, 120, 0.5);
+    color: #48bb78;
+    border-radius: 8px;
+}
+
+.error-message {
+    background: rgba(245, 101, 101, 0.2);
+    border: 1px solid rgba(245, 101, 101, 0.5);
+    color: #f56565;
+    border-radius: 8px;
+}
+
+/* Leaderboard table styles */
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.leaderboard-table th {
+    background: rgba(74, 85, 104, 0.5);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #4a5568;
+}
+
+.leaderboard-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(74, 85, 104, 0.3);
+}
+
+.leaderboard-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Region badge */
+.region-badge {
+    background: rgba(128, 90, 213, 0.2);
+    border: 1px solid rgba(128, 90, 213, 0.3);
+    color: #d6bcfa;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Print styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    #leaderboardSection, #leaderboardSection * {
+        visibility: visible;
+    }
+    
+    #leaderboardSection {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    
+    .nav-btn, #printLeaderboard, .action-btn {
+        display: none !important;
+    }
+    
+    .leaderboard-table {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    nav .flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .nav-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .action-btn {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .print-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Mobile layout: keep h1/p unchanged, make left title block take available space so hamburger sits inline at extreme right */
+@media (max-width: 767px) {
+    /* Ensure nav container remains a single row with space-between */
+    nav .container > div {
+        display: flex;
+        align-items: center;      /* vertically center title block and hamburger */
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    /* Title block: keep stacked title + subtitle (do NOT change sizes) */
+    .nav-title {
+        display: flex;
+        flex-direction: column;   /* keep h1 above p */
+        align-items: flex-start;
+        gap: 0.25rem;
+        flex: 1 1 auto;           /* take remaining space so hamburger aligns to the right */
+        min-width: 0;             /* allow truncation if necessary */
+    }
+
+    /* Remove any forced font-size changes — preserve original h1/p sizes */
+    .nav-title h1, .nav-title p {
+        /* no size overrides here — use defaults from desktop CSS / HTML */
+        margin: 0;
+    }
+
+    /* Keep logo compact but do not alter text sizes */
+    .w-10, .nav-title .w-10 {
+        width: 36px;
+        height: 36px;
+        flex: 0 0 36px;
+    }
+
+    /* Ensure hamburger sits at the extreme right */
+    #hamburger {
+        margin-left: 0.5rem;
+        flex: 0 0 auto;
+    }
+
+    /* Align mobile menu under the hamburger */
+    .mobile-menu {
+        top: 56px;
+        right: 8px;
+        max-width: 300px;
+        width: calc(100% - 16px);
+    }
+}
+
+@media (max-width: 640px) {
+    .leaderboard-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .print-btn span:last-child {
+        display: none;
+    }
+    
+    .print-btn span:first-child {
+        margin-right: 0;
+    }
+}
+
+@media (min-width: 330px) and (max-width: 400px) {
+    .rank-badge {
+        width: 35px;
+        height: 35px;
+        font-size: 0.875rem;
+    }
+}

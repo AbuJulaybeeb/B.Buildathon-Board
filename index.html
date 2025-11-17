@@ -1,0 +1,184 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockDag Buildathon - Ambassador Leaderboard</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-purple-500 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <!-- Left: Logo & Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">BD</span>
+                    </div>
+                    <div class="ml-2 nav-title">
+                        <h1 class="text-xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                            BlockDag Buildathon
+                        </h1>
+                        <p class="text-sm text-gray-400">Ambassador Leaderboard</p>
+                    </div>
+                </div>
+                
+                <!-- Right: Desktop buttons + Hamburger (hamburger visible on small screens) -->
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex space-x-4" id="desktopNav">
+                        <button id="navLeaderboard" class="nav-btn active px-6 py-2 rounded-lg border border-purple-500 bg-purple-900 bg-opacity-20 transition-all duration-300">
+                            Leaderboard
+                        </button>
+                        <button id="navAdd" class="nav-btn px-6 py-2 rounded-lg border border-gray-600 hover:border-purple-500 transition-all duration-300">
+                            Add Ambassador
+                        </button>
+                        <button id="navStats" class="nav-btn px-6 py-2 rounded-lg border border-gray-600 hover:border-purple-500 transition-all duration-300">
+                            Statistics
+                        </button>
+                    </div>
+
+                    <!-- Hamburger visible on mobile -->
+                    <button id="hamburger" class="md:hidden p-2 rounded-md focus:outline-none" aria-label="Open navigation">
+                        <span class="block w-6 h-0.5 bg-gray-300 mb-1 rounded"></span>
+                        <span class="block w-6 h-0.5 bg-gray-300 mb-1 rounded"></span>
+                        <span class="block w-6 h-0.5 bg-gray-300 rounded"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile dropdown menu -->
+        <div id="mobileMenu" class="mobile-menu hidden md:hidden">
+            <ul class="mobile-menu-list">
+                <li><a href="#" class="mobile-menu-link" data-target="leaderboard">🏆 Leaderboard</a></li>
+                <li><a href="#" class="mobile-menu-link" data-target="add">➕ Add Ambassador</a></li>
+                <li><a href="#" class="mobile-menu-link" data-target="stats">📊 Statistics</a></li>
+            </ul>
+        </div>
+        <div id="mobileOverlay" class="mobile-overlay hidden"></div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Leaderboard Section -->
+        <section id="leaderboardSection" class="page-section active">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">Ambassador Leaderboard</h2>
+                    <p id="totalAmbassadors" class="text-gray-400">Total Ambassadors: 0</p>
+                </div>
+                <button id="printLeaderboard" class="print-btn px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
+                    <span>📄</span>
+                    <span>Print Current Rankings</span>
+                </button>
+            </div>
+            
+            <div class="bg-gray-800 rounded-xl border border-purple-500 shadow-lg overflow-hidden mb-8">
+                <div class="p-6 border-b border-gray-700">
+                    <h3 class="text-xl font-semibold">Current Rankings</h3>
+                </div>
+                
+                <div id="leaderboardContainer">
+                    <!-- Leaderboard content will be populated by JavaScript -->
+                    <div class="p-8 text-center text-gray-400">
+                        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 mx-auto mb-2"></div>
+                        Loading leaderboard data...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Add Ambassador Section -->
+        <section id="addSection" class="page-section">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold mb-8">Add New Ambassador</h2>
+                
+                <div class="bg-gray-800 rounded-xl border border-purple-500 shadow-lg p-8">
+                    <form id="ambassadorForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-sm font-medium mb-2">Name</label>
+                                <input type="text" id="name" required 
+                                    class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 placeholder-gray-500"
+                                    placeholder="Enter ambassador name">
+                            </div>
+                            
+                            <div>
+                                <label for="region" class="block text-sm font-medium mb-2">Region</label>
+                                <select id="region" required
+                                    class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300">
+                                    <option value="" class="text-gray-500">Select a region</option>
+                                    <option value="North America">North America</option>
+                                    <option value="South America">South America</option>
+                                    <option value="Europe">Europe</option>
+                                    <option value="Asia">Asia</option>
+                                    <option value="Africa">Africa</option>
+                                    <option value="Oceania">Oceania</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="score" class="block text-sm font-medium mb-2">Initial Score</label>
+                            <input type="number" id="score" min="0" max="9999" value="0" required
+                                class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300">
+                        </div>
+                        
+                        <button type="submit" 
+                            class="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2">
+                            <span>➕</span>
+                            <span>Add Ambassador</span>
+                        </button>
+                    </form>
+                    
+                    <div id="formMessage" class="mt-6 p-4 rounded-lg hidden"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics Section -->
+        <section id="statsSection" class="page-section">
+            <h2 class="text-3xl font-bold mb-8">Statistics Dashboard</h2>
+            
+            <div id="statsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Statistics will be populated by JavaScript -->
+                <div class="p-8 text-center text-gray-400">
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 mx-auto mb-2"></div>
+                    Loading statistics...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 rounded-xl border border-purple-500 p-6 max-w-md mx-4">
+            <h3 class="text-xl font-bold mb-2">Confirm Deletion</h3>
+            <p class="text-gray-300 mb-4">Are you sure you want to delete <span id="deleteAmbassadorName" class="font-semibold"></span>? This action cannot be undone.</p>
+            <div class="flex space-x-3">
+                <button id="confirmDelete" class="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-all duration-300">
+                    Delete
+                </button>
+                <button id="cancelDelete" class="flex-1 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-all duration-300">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import main.js as ES module -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>
