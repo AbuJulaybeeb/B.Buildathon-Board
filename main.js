@@ -17,7 +17,6 @@ const firebaseConfig = {
 
 // --- SETTINGS ---
 const ADMIN_PASSWORD = "admin"; // CHANGE THIS TO YOUR DESIRED PASSWORD
-const LOADING_MIN_TIME = 800;   // Min time to show spinner for smooth UX
 
 // --- DATA: Countries by Region ---
 const countriesData = {
@@ -82,13 +81,11 @@ function checkAdminPassword(action) {
 // --- NAVIGATION ---
 function setupNavigation() {
     const handleNav = (target) => {
-        // Hide all sections
         Object.values(dom.sections).forEach(s => {
             s.classList.add('hidden');
             s.classList.remove('active');
         });
         
-        // Show target
         dom.sections[target].classList.remove('hidden');
         dom.sections[target].classList.add('active');
 
@@ -159,7 +156,7 @@ function renderLeaderboard() {
     }
 
     const tableHTML = `
-        <table class="w-full text-left border-collapse">
+        <table class="leaderboard-table w-full text-left border-collapse">
             <thead>
                 <tr class="bg-gray-700/50 text-gray-300 text-xs uppercase tracking-wider">
                     <th class="p-4 font-bold border-b border-gray-600">Rank</th>
@@ -188,8 +185,8 @@ function renderLeaderboard() {
                         trophy = '🥉 ';
                     }
 
-                    // Display Country if available (New Requirement)
-                    const locationDisplay = a.country || a.region;
+                    // Uses the 'region' field which now contains the Country
+                    const locationDisplay = a.region || 'Unknown';
 
                     return `
                     <tr class="${rowClass} transition-colors duration-200">
@@ -214,12 +211,12 @@ function renderLeaderboard() {
                         <td class="p-4 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <button onclick="editAmbassador('${a.id}')" 
-                                        class="p-2 text-cyan-400 hover:bg-cyan-900/30 rounded-lg transition-colors" 
+                                        class="action-btn p-2 text-cyan-400 hover:bg-cyan-900/30 rounded-lg transition-colors" 
                                         title="Edit Score">
                                     ✏️
                                 </button>
                                 <button onclick="showDeleteModal('${a.id}', '${a.name}')" 
-                                        class="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-colors" 
+                                        class="action-btn p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-colors" 
                                         title="Delete">
                                     🗑️
                                 </button>
@@ -260,20 +257,16 @@ function updateStats() {
 }
 
 // --- CRUD OPERATIONS ---
-
-// 1. ADD
 dom.form.element.addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    // 🔒 Password Check
     if (!checkAdminPassword('Add Ambassador')) return;
 
     const name = document.getElementById('name').value.trim();
-    const region = document.getElementById('region').value;
+    // We get the selected country here
     const country = document.getElementById('country').value;
     const score = parseInt(document.getElementById('score').value) || 0;
 
-    if (!name || !region || !country) {
+    if (!name || !country) {
         alert("⚠️ Please select a Region and a Country.");
         return;
     }
@@ -283,52 +276,41 @@ dom.form.element.addEventListener('submit', async (e) => {
         await set(newRef, {
             id: newRef.key,
             name,
-            region,
-            country, // Saving Country data
+            // SAVE SELECTION: Store 'country' in the 'region' database field
+            // This ensures NO new fields are created in your database.
+            region: country, 
             score,
             createdAt: new Date().toISOString()
         });
-
         dom.form.element.reset();
         dom.form.countryContainer.classList.add('hidden');
         alert("✅ Ambassador Added Successfully!");
-        dom.navLeaderboard.click(); // Return to list
+        dom.navLeaderboard.click();
     } catch (err) {
         console.error(err);
         alert("❌ Error adding ambassador");
     }
 });
 
-// 2. EDIT (Exposed Global Function)
 window.editAmbassador = async (id) => {
-    // 🔒 Password Check
     if (!checkAdminPassword('Edit Score')) return;
-
     const amb = ambassadors.find(a => a.id === id);
     if (!amb) return;
-
     const newScore = prompt(`Update score for ${amb.name}:`, amb.score);
-    
-    // User cancelled prompt
     if (newScore === null) return; 
     
-    // Validate number
     const scoreVal = parseInt(newScore);
     if (isNaN(scoreVal) || scoreVal < 0) {
         alert("Please enter a valid positive number.");
         return;
     }
-
     try {
-        await update(ref(database, `ambassadors/${id}`), {
-            score: scoreVal
-        });
+        await update(ref(database, `ambassadors/${id}`), { score: scoreVal });
     } catch (err) {
         alert("Error updating score");
     }
 };
 
-// 3. DELETE (Exposed Global Function)
 window.showDeleteModal = (id, name) => {
     deleteTargetId = id;
     dom.deleteAmbassadorName.textContent = name;
@@ -337,23 +319,18 @@ window.showDeleteModal = (id, name) => {
 
 document.getElementById('confirmDelete').addEventListener('click', async () => {
     if (!deleteTargetId) return;
-    
-    // Hide modal temporarily to show prompt cleanly
     dom.deleteModal.classList.add('hidden');
-
-    // 🔒 Password Check
     if (!checkAdminPassword('Delete Ambassador')) {
         deleteTargetId = null;
         return; 
     }
-
     try {
         await remove(ref(database, `ambassadors/${deleteTargetId}`));
         deleteTargetId = null;
         alert("🗑️ Ambassador Deleted.");
     } catch (err) {
         alert("Error deleting ambassador");
-        dom.deleteModal.classList.remove('hidden'); // Show modal again on error
+        dom.deleteModal.classList.remove('hidden');
     }
 });
 
@@ -362,20 +339,14 @@ document.getElementById('cancelDelete').addEventListener('click', () => {
     deleteTargetId = null;
 });
 
-// Print Feature
 document.getElementById('printLeaderboard').addEventListener('click', () => window.print());
 
-// --- APP START ---
 function init() {
     setupNavigation();
     setupRegionListener();
-
-    // Listen to Firebase Data
     onValue(ambassadorsRef, (snapshot) => {
         const data = snapshot.val() || {};
         ambassadors = Object.values(data).sort((a, b) => b.score - a.score);
-        
-        // Artificial delay for spinner if needed, or instant
         setTimeout(() => {
             renderLeaderboard();
             updateStats();
@@ -384,7 +355,6 @@ function init() {
     });
 }
 
-// Start
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
