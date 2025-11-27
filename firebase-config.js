@@ -9,7 +9,7 @@ import { getAnalytics } from "firebase/analytics";
 // Firebase configuration object - REPLACE WITH YOUR ACTUAL CONFIG
 const firebaseConfig = {
     apiKey: "AIzaSyB-mFZzq_s3ht4sTFnou_IekVK7KnJE4QU",
-    authDomain: "",
+    authDomain: "buildathon-leaderboard.firebaseapp.com",
     databaseURL: "https://buildathon-leaderboard-default-rtdb.firebaseio.com",
     projectId: "buildathon-leaderboard",
     storageBucket: "buildathon-leaderboard.firebasestorage.appspot.com",

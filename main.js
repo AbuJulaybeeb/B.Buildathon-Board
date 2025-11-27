@@ -1,9 +1,7 @@
-// Import Firebase functions using correct CDN URLs
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
 import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-// Firebase configuration - Replace with your actual config
+// --- CONFIGURATION ---
 const firebaseConfig = {
     apiKey: "AIzaSyB-mFZzq_s3ht4sTFnou_IekVK7KnJE4QU",
     authDomain: "buildathon-leaderboard.firebaseapp.com",
@@ -15,344 +13,325 @@ const firebaseConfig = {
     measurementId: "G-ZLJJZMPMS2"
 };
 
-// Initialize Firebase
-let app, database, ambassadorsRef;
-try {
-    app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    database = getDatabase(app);
-    ambassadorsRef = ref(database, 'ambassadors');
-    console.log("✅ Firebase initialized successfully");
-} catch (error) {
-    console.error("❌ Firebase initialization error:", error);
-}
+const ADMIN_PASSWORD = "admin"; // Simple password for demonstration
 
-// Global state
+// --- DATA: Countries by Region ---
+const countriesData = {
+    "North America": ["🇺🇸 United States", "🇨🇦 Canada", "🇲🇽 Mexico"],
+    "South America": ["🇧🇷 Brazil", "🇦🇷 Argentina", "🇨🇴 Colombia", "🇨🇱 Chile"],
+    "Europe": ["🇬🇧 UK", "🇩🇪 Germany", "🇫🇷 France", "🇪🇸 Spain", "🇮🇹 Italy", "🇳🇱 Netherlands", "🇵🇱 Poland"],
+    "Asia": ["🇮🇳 India", "🇨🇳 China", "🇯🇵 Japan", "🇰🇷 South Korea", "🇸🇬 Singapore", "🇦🇪 UAE", "🇮🇩 Indonesia"],
+    "Africa": ["🇳🇬 Nigeria", "🇿🇦 South Africa", "🇰🇪 Kenya", "🇪🇬 Egypt", "🇬🇭 Ghana"],
+    "Oceania": ["🇦🇺 Australia", "🇳🇿 New Zealand"]
+};
+
+// --- INITIALIZATION ---
+let app, database, ambassadorsRef;
 let ambassadors = [];
 let deleteTargetId = null;
 
-// DOM Elements
-const navLeaderboard = document.getElementById('navLeaderboard');
-const navAdd = document.getElementById('navAdd');
-const navStats = document.getElementById('navStats');
-const leaderboardSection = document.getElementById('leaderboardSection');
-const addSection = document.getElementById('addSection');
-const statsSection = document.getElementById('statsSection');
-const ambassadorForm = document.getElementById('ambassadorForm');
-const leaderboardContainer = document.getElementById('leaderboardContainer');
-const totalAmbassadors = document.getElementById('totalAmbassadors');
-const statsContainer = document.getElementById('statsContainer');
-const loadingSpinner = document.getElementById('loadingSpinner');
-const deleteModal = document.getElementById('deleteModal');
-const confirmDeleteBtn = document.getElementById('confirmDelete');
-const cancelDeleteBtn = document.getElementById('cancelDelete');
-const deleteAmbassadorName = document.getElementById('deleteAmbassadorName');
-const printLeaderboard = document.getElementById('printLeaderboard');
-const formMessage = document.getElementById('formMessage');
+try {
+    app = initializeApp(firebaseConfig);
+    database = getDatabase(app);
+    ambassadorsRef = ref(database, 'ambassadors');
+    console.log("✅ Firebase initialized");
+} catch (error) {
+    console.error("❌ Firebase init error:", error);
+}
 
-// Navigation handler
+// --- DOM ELEMENTS ---
+const dom = {
+    navLeaderboard: document.getElementById('navLeaderboard'),
+    navAdd: document.getElementById('navAdd'),
+    navStats: document.getElementById('navStats'),
+    sections: {
+        leaderboard: document.getElementById('leaderboardSection'),
+        add: document.getElementById('addSection'),
+        stats: document.getElementById('statsSection')
+    },
+    form: {
+        element: document.getElementById('ambassadorForm'),
+        region: document.getElementById('region'),
+        countryContainer: document.getElementById('countryContainer'),
+        country: document.getElementById('country'),
+        message: document.getElementById('formMessage')
+    },
+    leaderboardContainer: document.getElementById('leaderboardContainer'),
+    totalAmbassadors: document.getElementById('totalAmbassadors'),
+    statsContainer: document.getElementById('statsContainer'),
+    loadingSpinner: document.getElementById('loadingSpinner'),
+    deleteModal: document.getElementById('deleteModal'),
+    hamburger: document.getElementById('hamburger'),
+    mobileMenu: document.getElementById('mobileMenu')
+};
+
+// --- AUTHENTICATION ---
+function checkAdminPassword() {
+    const input = prompt("Enter Admin Password to continue:");
+    if (input === ADMIN_PASSWORD) return true;
+    alert("❌ Incorrect Password!");
+    return false;
+}
+
+// --- NAVIGATION ---
 function setupNavigation() {
-    navLeaderboard.addEventListener('click', () => showPage('leaderboard'));
-    navAdd.addEventListener('click', () => showPage('add'));
-    navStats.addEventListener('click', () => showPage('stats'));
-
-    // Mobile hamburger + menu logic
-    const hamburger = document.getElementById('hamburger');
-    const mobileMenu = document.getElementById('mobileMenu');
-    const mobileOverlay = document.getElementById('mobileOverlay');
-
-    function closeMobileMenu() {
-        mobileMenu?.classList.add('hidden');
-        mobileOverlay?.classList.add('hidden');
-        hamburger?.classList.remove('open');
-    }
-
-    function openMobileMenu() {
-        mobileMenu?.classList.remove('hidden');
-        mobileOverlay?.classList.remove('hidden');
-        hamburger?.classList.add('open');
-    }
-
-    if (hamburger) {
-        hamburger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (mobileMenu && mobileMenu.classList.contains('hidden')) {
-                openMobileMenu();
-            } else {
-                closeMobileMenu();
-            }
+    const handleNav = (target) => {
+        // Hide all sections
+        Object.values(dom.sections).forEach(s => {
+            s.classList.add('hidden');
+            s.classList.remove('active');
         });
-    }
+        
+        // Show target
+        dom.sections[target].classList.remove('hidden');
+        dom.sections[target].classList.add('active');
 
-    // Close when clicking overlay
-    if (mobileOverlay) {
-        mobileOverlay.addEventListener('click', () => {
-            closeMobileMenu();
+        // Update Buttons
+        [dom.navLeaderboard, dom.navAdd, dom.navStats].forEach(btn => {
+            if(btn) btn.classList.remove('active', 'bg-purple-900', 'bg-opacity-20');
         });
-    }
+        
+        const activeBtn = document.getElementById(`nav${target.charAt(0).toUpperCase() + target.slice(1)}`);
+        if(activeBtn) activeBtn.classList.add('active', 'bg-purple-900', 'bg-opacity-20');
 
-    // Mobile menu links
-    const mobileLinks = document.querySelectorAll('.mobile-menu-link');
-    mobileLinks.forEach(link => {
+        // Close mobile menu
+        dom.mobileMenu.classList.add('hidden');
+    };
+
+    dom.navLeaderboard.addEventListener('click', () => handleNav('leaderboard'));
+    dom.navAdd.addEventListener('click', () => handleNav('add'));
+    dom.navStats.addEventListener('click', () => handleNav('stats'));
+
+    // Mobile Hamburger
+    dom.hamburger.addEventListener('click', () => {
+        dom.mobileMenu.classList.toggle('hidden');
+    });
+
+    // Mobile Links
+    document.querySelectorAll('.mobile-menu-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const target = link.getAttribute('data-target');
-            if (target) showPage(target);
-            closeMobileMenu();
+            handleNav(link.dataset.target);
         });
     });
+}
 
-    // Close mobile menu when resizing to desktop
-    window.addEventListener('resize', () => {
-        if (window.innerWidth >= 768) closeMobileMenu();
+// --- REGION & COUNTRY LOGIC ---
+function setupRegionListener() {
+    dom.form.region.addEventListener('change', (e) => {
+        const region = e.target.value;
+        const countrySelect = dom.form.country;
+        
+        // Clear previous options
+        countrySelect.innerHTML = '<option value="">Select a country</option>';
+
+        if (region && countriesData[region]) {
+            dom.form.countryContainer.classList.remove('hidden');
+            countriesData[region].forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                countrySelect.appendChild(option);
+            });
+        } else {
+            dom.form.countryContainer.classList.add('hidden');
+        }
     });
 }
 
-// Show/hide pages
-function showPage(page) {
-    // Hide all sections
-    leaderboardSection.classList.remove('active');
-    addSection.classList.remove('active');
-    statsSection.classList.remove('active');
-
-    // Remove active class from all nav buttons
-    navLeaderboard.classList.remove('active');
-    navAdd.classList.remove('active');
-    navStats.classList.remove('active');
-
-    // Show selected section and update nav
-    switch(page) {
-        case 'leaderboard':
-            leaderboardSection.classList.add('active');
-            navLeaderboard.classList.add('active');
-            break;
-        case 'add':
-            addSection.classList.add('active');
-            navAdd.classList.add('active');
-            break;
-        case 'stats':
-            statsSection.classList.add('active');
-            navStats.classList.add('active');
-            break;
-    }
-}
-
-// Format leaderboard table
+// --- RENDERING ---
 function renderLeaderboard() {
     if (ambassadors.length === 0) {
-        leaderboardContainer.innerHTML = `
+        dom.leaderboardContainer.innerHTML = `
             <div class="p-8 text-center text-gray-400">
                 <div class="text-4xl mb-4">🏆</div>
-                <p class="text-lg">No ambassadors yet</p>
-                <p class="text-sm">Add the first ambassador to get started!</p>
-            </div>
-        `;
+                <p>No ambassadors yet.</p>
+            </div>`;
         return;
     }
 
-    const table = document.createElement('table');
-    table.className = 'leaderboard-table';
-    
-    table.innerHTML = `
-        <thead>
-            <tr>
-                <th>Rank</th>
-                <th>Name</th>
-                <th>Region</th>
-                <th>Score</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${ambassadors.map((ambassador, index) => {
-                const rank = index + 1;
-                let rankClass = 'rank-other';
-                if (rank === 1) rankClass = 'rank-1';
-                else if (rank === 2) rankClass = 'rank-2';
-                else if (rank === 3) rankClass = 'rank-3';
+    const tableHTML = `
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-700 text-gray-300">
+                    <th class="p-4 rounded-tl-lg">Rank</th>
+                    <th class="p-4">Name</th>
+                    <th class="p-4">Country</th>
+                    <th class="p-4">Score</th>
+                    <th class="p-4 rounded-tr-lg text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-300">
+                ${ambassadors.map((a, index) => {
+                    const rank = index + 1;
+                    let badgeColor = 'bg-gray-700';
+                    if (rank === 1) badgeColor = 'bg-yellow-500 text-black';
+                    if (rank === 2) badgeColor = 'bg-gray-300 text-black';
+                    if (rank === 3) badgeColor = 'bg-orange-500 text-black';
 
-                return `
-                    <tr class="leaderboard-item">
-                        <td><span class="rank-badge ${rankClass}">#${rank}</span></td>
-                        <td>${ambassador.name}</td>
-                        <td><span class="region-badge">${ambassador.region}</span></td>
-                        <td class="font-bold">${ambassador.score.toLocaleString()}</td>
-                        <td>
-                            <button class="action-btn edit-btn" onclick="editAmbassador('${ambassador.id}')">Edit</button>
-                            <button class="action-btn delete-btn" onclick="showDeleteModal('${ambassador.id}', '${ambassador.name}')">Delete</button>
+                    // Display Country if available, else Region
+                    const locationDisplay = a.country || a.region;
+
+                    return `
+                    <tr class="border-b border-gray-700 hover:bg-gray-750 transition">
+                        <td class="p-4">
+                            <span class="${badgeColor} w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm shadow-md">
+                                ${rank}
+                            </span>
+                        </td>
+                        <td class="p-4 font-semibold text-white">${a.name}</td>
+                        <td class="p-4">
+                            <span class="px-3 py-1 rounded-full bg-purple-500 bg-opacity-20 text-purple-300 border border-purple-500 border-opacity-30 text-sm">
+                                ${locationDisplay}
+                            </span>
+                        </td>
+                        <td class="p-4 font-mono text-lg font-bold text-purple-400">${a.score.toLocaleString()}</td>
+                        <td class="p-4 text-center space-x-2">
+                            <button onclick="editAmbassador('${a.id}')" class="text-cyan-400 hover:text-cyan-300 transition text-sm font-medium px-2 py-1 border border-cyan-900 rounded bg-cyan-900 bg-opacity-20 hover:bg-opacity-40">Edit</button>
+                            <button onclick="showDeleteModal('${a.id}', '${a.name}')" class="text-red-400 hover:text-red-300 transition text-sm font-medium px-2 py-1 border border-red-900 rounded bg-red-900 bg-opacity-20 hover:bg-opacity-40">Delete</button>
                         </td>
                     </tr>
-                `;
-            }).join('')}
-        </tbody>
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
     `;
 
-    leaderboardContainer.innerHTML = '';
-    leaderboardContainer.appendChild(table);
-    totalAmbassadors.textContent = `Total Ambassadors: ${ambassadors.length}`;
+    dom.leaderboardContainer.innerHTML = tableHTML;
+    dom.totalAmbassadors.textContent = `Total Ambassadors: ${ambassadors.length}`;
 }
 
-// Update statistics
 function updateStats() {
-    if (ambassadors.length === 0) {
-        statsContainer.innerHTML = `
-            <div class="p-8 text-center text-gray-400 col-span-full">
-                <div class="text-4xl mb-4">📊</div>
-                <p class="text-lg">No statistics available</p>
-            </div>
-        `;
-        return;
-    }
-
+    if (ambassadors.length === 0) return;
+    
     const total = ambassadors.length;
-    const avgScore = Math.round(ambassadors.reduce((sum, a) => sum + a.score, 0) / total);
-    const maxScore = Math.max(...ambassadors.map(a => a.score));
-    const regions = new Set(ambassadors.map(a => a.region));
+    const avg = Math.round(ambassadors.reduce((s, a) => s + a.score, 0) / total);
+    const max = Math.max(...ambassadors.map(a => a.score));
 
-    statsContainer.innerHTML = `
+    dom.statsContainer.innerHTML = `
         <div class="stat-card">
-            <div class="stat-value">${total}</div>
-            <p class="text-gray-300 mt-2">Total Ambassadors</p>
+            <div class="stat-value text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">${total}</div>
+            <p class="text-gray-400 mt-2">Total Ambassadors</p>
         </div>
         <div class="stat-card">
-            <div class="stat-value">${avgScore.toLocaleString()}</div>
-            <p class="text-gray-300 mt-2">Average Score</p>
+            <div class="stat-value text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-600">${avg.toLocaleString()}</div>
+            <p class="text-gray-400 mt-2">Average Score</p>
         </div>
         <div class="stat-card">
-            <div class="stat-value">${maxScore.toLocaleString()}</div>
-            <p class="text-gray-300 mt-2">Highest Score</p>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">${regions.size}</div>
-            <p class="text-gray-300 mt-2">Active Regions</p>
+            <div class="stat-value text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-600">${max.toLocaleString()}</div>
+            <p class="text-gray-400 mt-2">Highest Score</p>
         </div>
     `;
 }
 
-// Add ambassador
-ambassadorForm.addEventListener('submit', async (e) => {
+// --- CRUD OPERATIONS ---
+
+// 1. ADD
+dom.form.element.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    if (!checkAdminPassword()) return; // Password Check
 
     const name = document.getElementById('name').value.trim();
     const region = document.getElementById('region').value;
+    const country = document.getElementById('country').value; // Get Country
     const score = parseInt(document.getElementById('score').value) || 0;
 
-    if (!name || !region) {
-        showMessage('Please fill in all fields', 'error');
+    if (!name || !region || !country) {
+        alert("Please fill in Name, Region, and Country.");
         return;
     }
 
     try {
         const newRef = push(ambassadorsRef);
-        const newId = newRef.key;
-        
         await set(newRef, {
-            id: newId,
+            id: newRef.key,
             name,
             region,
+            country, // Save Country
             score,
             createdAt: new Date().toISOString()
         });
 
-        showMessage('Ambassador added successfully!', 'success');
-        ambassadorForm.reset();
-        setTimeout(() => showPage('leaderboard'), 1500);
-    } catch (error) {
-        console.error('Error adding ambassador:', error);
-        showMessage('Failed to add ambassador', 'error');
+        dom.form.element.reset();
+        dom.form.countryContainer.classList.add('hidden');
+        alert("✅ Ambassador Added!");
+        // Go to leaderboard
+        dom.navLeaderboard.click();
+    } catch (err) {
+        console.error(err);
+        alert("Error adding ambassador");
     }
 });
 
-// Edit ambassador
-async function editAmbassador(ambassadorId) {
-    const ambassador = ambassadors.find(a => a.id === ambassadorId);
-    if (!ambassador) return;
+// 2. EDIT (Exposed to Window)
+window.editAmbassador = async (id) => {
+    if (!checkAdminPassword()) return; // Password Check
 
-    const newScore = prompt(`Update score for ${ambassador.name}:`, ambassador.score);
+    const amb = ambassadors.find(a => a.id === id);
+    if (!amb) return;
+
+    const newScore = prompt(`Update score for ${amb.name}:`, amb.score);
     if (newScore === null) return;
 
-    const score = parseInt(newScore) || 0;
-    if (score < 0) {
-        showMessage('Score must be a positive number', 'error');
-        return;
-    }
-
     try {
-        await update(ref(database, `ambassadors/${ambassadorId}`), { score });
-        showMessage('Ambassador updated successfully!', 'success');
-    } catch (error) {
-        console.error('Error updating ambassador:', error);
-        showMessage('Failed to update ambassador', 'error');
+        await update(ref(database, `ambassadors/${id}`), {
+            score: parseInt(newScore)
+        });
+        // No alert needed, realtime listener updates UI
+    } catch (err) {
+        alert("Error updating score");
     }
-}
+};
 
-// Delete modal
-function showDeleteModal(ambassadorId, ambassadorName) {
-    deleteTargetId = ambassadorId;
-    deleteAmbassadorName.textContent = ambassadorName;
-    deleteModal.classList.remove('hidden');
-}
+// 3. DELETE (Exposed to Window)
+window.showDeleteModal = (id, name) => {
+    deleteTargetId = id;
+    document.getElementById('deleteAmbassadorName').textContent = name;
+    dom.deleteModal.classList.remove('hidden');
+};
 
-async function confirmDeleteAction() {
+document.getElementById('confirmDelete').addEventListener('click', async () => {
     if (!deleteTargetId) return;
+    
+    // Hide modal first
+    dom.deleteModal.classList.add('hidden');
+
+    if (!checkAdminPassword()) { // Password Check
+        deleteTargetId = null;
+        return; 
+    }
 
     try {
         await remove(ref(database, `ambassadors/${deleteTargetId}`));
-        deleteModal.classList.add('hidden');
-        showMessage('Ambassador deleted successfully!', 'success');
-    } catch (error) {
-        console.error('Error deleting ambassador:', error);
-        showMessage('Failed to delete ambassador', 'error');
+        deleteTargetId = null;
+    } catch (err) {
+        alert("Error deleting ambassador");
     }
-}
-
-confirmDeleteBtn.addEventListener('click', confirmDeleteAction);
-cancelDeleteBtn.addEventListener('click', () => deleteModal.classList.add('hidden'));
-
-// Print leaderboard
-printLeaderboard.addEventListener('click', () => {
-    window.print();
 });
 
-// Show message
-function showMessage(message, type) {
-    formMessage.textContent = message;
-    formMessage.className = `mt-6 p-4 rounded-lg ${type === 'success' ? 'success-message' : 'error-message'}`;
-    formMessage.classList.remove('hidden');
-    setTimeout(() => formMessage.classList.add('hidden'), 5000);
-}
+document.getElementById('cancelDelete').addEventListener('click', () => {
+    dom.deleteModal.classList.add('hidden');
+    deleteTargetId = null;
+});
 
-// Firebase listener
-function setupDataListener() {
+document.getElementById('printLeaderboard').addEventListener('click', () => window.print());
+
+// --- APP START ---
+function init() {
+    setupNavigation();
+    setupRegionListener();
+
     onValue(ambassadorsRef, (snapshot) => {
         const data = snapshot.val() || {};
-        ambassadors = Object.values(data)
-            .sort((a, b) => b.score - a.score);
+        ambassadors = Object.values(data).sort((a, b) => b.score - a.score);
         
         renderLeaderboard();
         updateStats();
-        
-        loadingSpinner.classList.add('hidden');
-    }, (error) => {
-        console.error('Firebase error:', error);
-        loadingSpinner.classList.add('hidden');
-        showMessage('Failed to load data', 'error');
+        dom.loadingSpinner.classList.add('hidden');
     });
 }
 
-// Initialize app
-function init() {
-    console.log('Initializing app...');
-    setupNavigation();
-    setupDataListener();
-}
-
-// ===== EXPOSE FUNCTIONS TO GLOBAL SCOPE =====
-// Make functions available for inline onclick handlers in HTML
-window.editAmbassador = editAmbassador;
-window.showDeleteModal = showDeleteModal;
-
-// Start when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

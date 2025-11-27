@@ -1,184 +1,157 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlockDag Buildathon - Ambassador Leaderboard</title>
-    
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
-    <!-- Loading Spinner -->
-    <div id="loadingSpinner" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
+<body class="bg-gray-900 text-white min-h-screen font-sans">
+    
+    <div id="loadingSpinner" class="fixed inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-50">
+        <div class="flex flex-col items-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500 mb-4"></div>
+            <p class="text-purple-400 font-medium">Loading Leaderboard...</p>
+        </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="bg-gray-800 border-b border-purple-500 shadow-lg">
+    <nav class="bg-gray-800 border-b border-purple-500 shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between py-4">
-                <!-- Left: Logo & Title -->
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <div class="flex items-center justify-between h-16 md:h-20">
+                <div class="flex items-center space-x-3 shrink-0">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/30">
                         <span class="text-white font-bold text-lg">BD</span>
                     </div>
-                    <div class="ml-2 nav-title">
-                        <h1 class="text-xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                            BlockDag Buildathon
+                    <div class="flex flex-col">
+                        <h1 class="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent leading-tight">
+                            BlockDag
                         </h1>
-                        <p class="text-sm text-gray-400">Ambassador Leaderboard</p>
+                        <p class="text-xs text-gray-400 font-medium">Ambassador Board</p>
                     </div>
                 </div>
                 
-                <!-- Right: Desktop buttons + Hamburger (hamburger visible on small screens) -->
-                <div class="flex items-center space-x-4">
-                    <div class="hidden md:flex space-x-4" id="desktopNav">
-                        <button id="navLeaderboard" class="nav-btn active px-6 py-2 rounded-lg border border-purple-500 bg-purple-900 bg-opacity-20 transition-all duration-300">
-                            Leaderboard
-                        </button>
-                        <button id="navAdd" class="nav-btn px-6 py-2 rounded-lg border border-gray-600 hover:border-purple-500 transition-all duration-300">
-                            Add Ambassador
-                        </button>
-                        <button id="navStats" class="nav-btn px-6 py-2 rounded-lg border border-gray-600 hover:border-purple-500 transition-all duration-300">
-                            Statistics
-                        </button>
-                    </div>
-
-                    <!-- Hamburger visible on mobile -->
-                    <button id="hamburger" class="md:hidden p-2 rounded-md focus:outline-none" aria-label="Open navigation">
-                        <span class="block w-6 h-0.5 bg-gray-300 mb-1 rounded"></span>
-                        <span class="block w-6 h-0.5 bg-gray-300 mb-1 rounded"></span>
-                        <span class="block w-6 h-0.5 bg-gray-300 rounded"></span>
+                <div class="nav-desktop space-x-4 items-center">
+                    <button id="navLeaderboard" class="nav-btn active px-5 py-2 rounded-lg border border-purple-500 bg-purple-900 bg-opacity-20 transition-all duration-300 text-sm font-medium">
+                        Leaderboard
+                    </button>
+                    <button id="navAdd" class="nav-btn px-5 py-2 rounded-lg border border-gray-600 hover:border-purple-500 transition-all duration-300 text-sm font-medium">
+                        Add Ambassador
+                    </button>
+                    <button id="navStats" class="nav-btn px-5 py-2 rounded-lg border border-gray-600 hover:border-purple-500 transition-all duration-300 text-sm font-medium">
+                        Statistics
                     </button>
                 </div>
+
+                <button id="hamburger" class="nav-hamburger p-2 text-gray-300 hover:text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
             </div>
         </div>
 
-        <!-- Mobile dropdown menu -->
-        <div id="mobileMenu" class="mobile-menu hidden md:hidden">
-            <ul class="mobile-menu-list">
-                <li><a href="#" class="mobile-menu-link" data-target="leaderboard">🏆 Leaderboard</a></li>
-                <li><a href="#" class="mobile-menu-link" data-target="add">➕ Add Ambassador</a></li>
-                <li><a href="#" class="mobile-menu-link" data-target="stats">📊 Statistics</a></li>
+        <div id="mobileMenu" class="hidden mobile-menu-container bg-gray-800 border-b border-purple-500 animate-fade-in-down shadow-xl">
+            <ul class="flex flex-col p-4 space-y-2">
+                <li><a href="#" class="mobile-menu-link block px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-purple-400 transition font-medium" data-target="leaderboard">🏆 Leaderboard</a></li>
+                <li><a href="#" class="mobile-menu-link block px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-purple-400 transition font-medium" data-target="add">➕ Add Ambassador</a></li>
+                <li><a href="#" class="mobile-menu-link block px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-purple-400 transition font-medium" data-target="stats">📊 Statistics</a></li>
             </ul>
         </div>
-        <div id="mobileOverlay" class="mobile-overlay hidden"></div>
     </nav>
 
-    <!-- Main Content Container -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- Leaderboard Section -->
+    <main class="container mx-auto px-4 py-8 max-w-6xl">
+        
         <section id="leaderboardSection" class="page-section active">
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h2 class="text-3xl font-bold mb-2">Ambassador Leaderboard</h2>
-                    <p id="totalAmbassadors" class="text-gray-400">Total Ambassadors: 0</p>
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <div class="text-center md:text-left">
+                    <h2 class="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">Ambassador Leaderboard</h2>
+                    <p id="totalAmbassadors" class="text-gray-400 font-medium">Total Ambassadors: 0</p>
                 </div>
-                <button id="printLeaderboard" class="print-btn px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
+                <button id="printLeaderboard" class="px-6 py-3 rounded-lg font-bold text-white shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:shadow-purple-500/50">
                     <span>📄</span>
-                    <span>Print Current Rankings</span>
+                    <span>Print Rankings</span>
                 </button>
             </div>
             
-            <div class="bg-gray-800 rounded-xl border border-purple-500 shadow-lg overflow-hidden mb-8">
-                <div class="p-6 border-b border-gray-700">
-                    <h3 class="text-xl font-semibold">Current Rankings</h3>
-                </div>
-                
-                <div id="leaderboardContainer">
-                    <!-- Leaderboard content will be populated by JavaScript -->
-                    <div class="p-8 text-center text-gray-400">
-                        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 mx-auto mb-2"></div>
-                        Loading leaderboard data...
+            <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-xl overflow-hidden mb-8">
+                <div id="leaderboardContainer" class="overflow-x-auto min-h-[300px]">
                     </div>
-                </div>
             </div>
         </section>
 
-        <!-- Add Ambassador Section -->
-        <section id="addSection" class="page-section">
+        <section id="addSection" class="page-section hidden">
             <div class="max-w-2xl mx-auto">
-                <h2 class="text-3xl font-bold mb-8">Add New Ambassador</h2>
-                
-                <div class="bg-gray-800 rounded-xl border border-purple-500 shadow-lg p-8">
+                <h2 class="text-3xl font-bold mb-8 text-center">Add New Ambassador</h2>
+                <div class="bg-gray-800 rounded-xl border border-purple-500/50 shadow-2xl p-8">
                     <form id="ambassadorForm" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="name" class="block text-sm font-medium mb-2">Name</label>
+                                <label for="name" class="block text-sm font-medium mb-2 text-gray-400">Ambassador Name</label>
                                 <input type="text" id="name" required 
-                                    class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 placeholder-gray-500"
-                                    placeholder="Enter ambassador name">
+                                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white placeholder-gray-500 transition-colors" 
+                                       placeholder="Enter full name">
                             </div>
-                            
                             <div>
-                                <label for="region" class="block text-sm font-medium mb-2">Region</label>
-                                <select id="region" required
-                                    class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300">
-                                    <option value="" class="text-gray-500">Select a region</option>
-                                    <option value="North America">North America</option>
-                                    <option value="South America">South America</option>
-                                    <option value="Europe">Europe</option>
-                                    <option value="Asia">Asia</option>
-                                    <option value="Africa">Africa</option>
-                                    <option value="Oceania">Oceania</option>
-                                </select>
+                                <label for="score" class="block text-sm font-medium mb-2 text-gray-400">Initial Score</label>
+                                <input type="number" id="score" min="0" value="0" required 
+                                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white transition-colors">
                             </div>
                         </div>
-                        
                         <div>
-                            <label for="score" class="block text-sm font-medium mb-2">Initial Score</label>
-                            <input type="number" id="score" min="0" max="9999" value="0" required
-                                class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300">
+                            <label for="region" class="block text-sm font-medium mb-2 text-gray-400">Region</label>
+                            <select id="region" required 
+                                    class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white transition-colors appearance-none cursor-pointer">
+                                <option value="" class="text-gray-500">Select a region...</option>
+                                <option value="North America">North America</option>
+                                <option value="South America">South America</option>
+                                <option value="Europe">Europe</option>
+                                <option value="Asia">Asia</option>
+                                <option value="Africa">Africa</option>
+                                <option value="Oceania">Oceania</option>
+                            </select>
                         </div>
-                        
-                        <button type="submit" 
-                            class="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2">
-                            <span>➕</span>
-                            <span>Add Ambassador</span>
-                        </button>
+                        <div id="countryContainer" class="hidden animate-fade-in">
+                            <label for="country" class="block text-sm font-medium mb-2 text-purple-400">Select Country</label>
+                            <select id="country" required 
+                                    class="w-full px-4 py-3 bg-gray-700 border border-purple-500 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white transition-colors appearance-none cursor-pointer">
+                                <option value="">Select a country...</option>
+                            </select>
+                        </div>
+                        <div class="pt-4">
+                            <button type="submit" class="w-full py-4 px-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold text-lg text-white shadow-lg transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-purple-500/50 flex items-center justify-center gap-3">
+                                <span>🔒</span>
+                                <span>Save Ambassador</span>
+                            </button>
+                            <p class="text-center text-xs text-gray-500 mt-3">* Password required for this action</p>
+                        </div>
                     </form>
-                    
-                    <div id="formMessage" class="mt-6 p-4 rounded-lg hidden"></div>
                 </div>
             </div>
         </section>
 
-        <!-- Statistics Section -->
-        <section id="statsSection" class="page-section">
-            <h2 class="text-3xl font-bold mb-8">Statistics Dashboard</h2>
-            
-            <div id="statsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Statistics will be populated by JavaScript -->
-                <div class="p-8 text-center text-gray-400">
-                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 mx-auto mb-2"></div>
-                    Loading statistics...
-                </div>
-            </div>
+        <section id="statsSection" class="page-section hidden">
+            <h2 class="text-3xl font-bold mb-8 text-center">Statistics Dashboard</h2>
+            <div id="statsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
         </section>
     </main>
 
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 rounded-xl border border-purple-500 p-6 max-w-md mx-4">
-            <h3 class="text-xl font-bold mb-2">Confirm Deletion</h3>
-            <p class="text-gray-300 mb-4">Are you sure you want to delete <span id="deleteAmbassadorName" class="font-semibold"></span>? This action cannot be undone.</p>
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden backdrop-blur-sm transition-opacity">
+        <div class="bg-gray-800 rounded-xl border border-red-500/50 p-6 max-w-md w-full mx-4 shadow-2xl transform scale-100">
+            <h3 class="text-xl font-bold mb-2 text-white">⚠️ Delete Ambassador?</h3>
+            <p class="text-gray-300 mb-6">Are you sure you want to permanently delete <span id="deleteAmbassadorName" class="font-bold text-white"></span>?</p>
             <div class="flex space-x-3">
-                <button id="confirmDelete" class="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-all duration-300">
-                    Delete
+                <button id="confirmDelete" class="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-bold shadow-lg shadow-red-900/50">
+                    Yes, Delete
                 </button>
-                <button id="cancelDelete" class="flex-1 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-all duration-300">
+                <button id="cancelDelete" class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium">
                     Cancel
                 </button>
             </div>
+            <p class="text-center text-xs text-gray-500 mt-4">* Password required</p>
         </div>
     </div>
 
-    <!-- Import main.js as ES module -->
     <script type="module" src="main.js"></script>
 </body>
 </html>
