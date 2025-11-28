@@ -23,7 +23,7 @@ const countriesData = {
     "North America": ["🇺🇸 United States", "🇨🇦 Canada", "🇲🇽 Mexico"],
     "South America": ["🇧🇷 Brazil", "🇦🇷 Argentina", "🇨🇴 Colombia", "🇨🇱 Chile", "🇵🇪 Peru"],
     "Europe": ["🇬🇧 United Kingdom", "🇩🇪 Germany", "🇫🇷 France", "🇪🇸 Spain", "🇮🇹 Italy", "🇳🇱 Netherlands", "🇵🇱 Poland", "🇺🇦 Ukraine", "🇨🇭 Switzerland"],
-    "Asia": ["🇮🇳 India", "🇨🇳 China", "🇯🇵 Japan", "🇰🇷 South Korea", "🇸🇬 Singapore", "🇦🇪 UAE", "🇮🇩 Indonesia", "🇻🇳 Vietnam", "🇹🇭 Thailand"],
+    "Asia": ["🇮🇳 India", "🇨🇳 China", "🇯🇵 Japan", "🇰🇷 South Korea", "🇸🇬 Singapore", "🇦🇪 UAE", "🇮🇩 Indonesia", "🇻🇳 Vietnam", "🇹🇭 Thailand", "🇹🇷Turkey"],
     "Africa": ["🇳🇬 Nigeria", "🇿🇦 South Africa", "🇰🇪 Kenya", "🇪🇬 Egypt", "🇬🇭 Ghana", "🇷🇼 Rwanda", "🇪🇹 Ethiopia"],
     "Oceania": ["🇦🇺 Australia", "🇳🇿 New Zealand", "🇫🇯 Fiji"]
 };
